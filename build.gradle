@@ -1,0 +1,46 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.xerial:sqlite-jdbc:3.41.2.1'
+}
+
+javafx {
+    version = '19'
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+application {
+    mainClass = 'com.market4cast.Market4castApp'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+// Placeholder for native packaging task
+task packageWin(type: Exec) {
+    dependsOn build
+    commandLine 'jpackage', 
+                '--name', 'Market4cast', 
+                '--input', 'build/libs', 
+                '--main-jar', "Market4cast-${project.version}.jar", 
+                '--main-class', 'com.market4cast.Market4castApp', 
+                '--type', 'exe', 
+                '--win-dir-chooser', 
+                '--win-menu', 
+                '--win-shortcut'
+}
