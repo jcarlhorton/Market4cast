@@ -1,0 +1,99 @@
+# Market4cast Implementation Plan: Earnings Anomaly Strategy (v2.0)
+
+This document outlines the robust architecture and quantitative approach for the Market4cast Equity Predictor. The system utilizes the **Post-Earnings Announcement Drift (PEAD)** strategy, refined with risk management and historical validation.
+
+## Goal Description
+
+Identify publicly traded companies likely to experience sustained upward price momentum over a 30-60 day period following a significant earnings surprise. The system uses a hybrid Heuristic/ML approach with a Python sidecar and a JavaFX dashboard, optimized for local execution on free data.
+
+## User Review Required
+
+> [!IMPORTANT]
+> This plan has been updated to include **Phase 0: Historical Validation** to prevent "Cold Start" risks. We have also added **Risk Management** (Stop Losses/Position Sizing) and refined the **Polling Strategy** to a "Best Effort" background process.
+
+## Proposed Data Analysis & Risk Approach
+
+### 1. The Pre-Filter & Entry Logic
+*   **Filter Step 1: Earnings Date Filter.** Daily query to `yfinance` for companies reporting in the last 24-48 hours.
+*   **Filter Step 2: Surprise Anomaly.**
+    *   **Price Gap:** > 5% higher than previous close.
+    *   **Volume Spike:** > 200% of 30-day moving average.
+*   **Entry Strategy:** All "Target Price" calculations and "Closed Trade" tracking use the **Day 2 Open** as the entry basis, ensuring the model reflects realistic execution prices rather than the initial gap peak.
+
+### 2. Qualitative LLM Analysis (Deep Insights)
+The LLM fetches 8-K/10-Q filings via SEC EDGAR (with a 10 request/sec rate limiter).
+*   **Prompt Refinement:** LLMs are specifically prompted to look past "management optimism" and identify:
+    *   **GAAP vs. Non-GAAP Reconciliations:** Are the earnings "clean"?
+    *   **Inventory/Receivables:** Is growth healthy or stuffed in the channel?
+*   **Evidence Attribution:** The LLM returns the specific text snippet/quote used to justify its Guidance Score for UI display.
+
+### 3. The Risk & Calculation Engine
+*   **Phase 1: Quantitative Heuristic + Risk.** 
+    *   `Target = Base_Drift + (W_Gap * Gap) + (W_Vol * Vol) + (W_LLM * Score)`
+    *   **Stop Loss:** Automatic -7% floor calculated from entry.
+    *   **Position Sizing:** Suggested weight (1% to 5%) based on LLM Confidence and Sector Correlation (capping sector exposure at 20%).
+*   **Phase 2: XGBoost Transition.** Transition occurs only after **500+** samples to avoid overfitting. Until then, use Linear Regression or the Heuristic.
+*   **Scoring Metrics:** Accountability is tracked via **Profit Factor** (Sum of Gains / Sum of Losses) and **Volatility-Adjusted Return**, rather than just directional accuracy.
+
+---
+
+## System Architecture Refinements
+
+### 1. Python Sidecar (The Engine)
+*   **Best Effort Polling:** Runs as a persistent background process. It polls for new data whenever the host machine is active, prioritizing system stability over aggressive scheduling.
+*   **Data Validation Layer:** A middleware that cleans `yfinance` data and handles API "holes."
+*   **SQLite WAL Mode:** Shared database configured for Write-Ahead Logging to prevent concurrency locks between Python (write) and Java (read).
+
+### 2. JavaFX Host (The Dashboard)
+*   **Risk-Aware UI:** Displays suggested position sizes and "Danger Zones" (high sector concentration).
+*   **Attribution Viewer:** Allows users to see the filing quotes behind an LLM score.
+
+---
+
+## Phased Implementation Approach
+
+Based on the JavaFX + Python Sidecar architecture, development will proceed in the following phases:
+
+### Phase 0: Historical Validation (Backtesting)
+**Goal:** Prove the PEAD strategy and tune the initial heuristic before live execution.
+*   **[NEW] src/engine/backtest.py:** Scripts to ingest 2023-2024 earnings data, validate the 5%/200% filters, and tune the weighted heuristic formula.
+*   **[NEW] src/engine/data_utils.py:** Shared utility functions for price normalization, volume calculation, and general data cleaning.
+
+### Phase 1: Sidecar Foundation & Data Integrity
+**Goal:** Establish the background engine, data pipeline, and persistence layer.
+*   **[NEW] src/engine/ingestion.py:** Implements the daily rate-limited `yfinance` queries, anomaly filters, and "Day 2 Open" entry logic.
+*   **[NEW] src/engine/db_schema.sql:** SQL initialization script to setup SQLite in WAL mode with tables for `active_predictions`, `historical_performance`, and `risk_metrics`.
+*   **[NEW] src/engine/validator.py:** Middleware layer to clean incoming API data and handle missing values/anomalies (Data Validation Layer).
+*   **[NEW] src/engine/main.py:** The entry point for the Python sidecar; manages the persistent "best effort" background polling loop.
+
+### Phase 2: JavaFX Host & Risk UI
+**Goal:** Build the native dashboard and the logic to manage the Python lifecycle.
+*   **[NEW] src/main/java/com/market4cast/Market4castApp.java:** The main entry point for the JavaFX application and system tray setup.
+*   **[NEW] src/main/resources/fxml/Dashboard.fxml:** FXML layout for the premium, risk-aware dashboard (Top Picks, Risk Indicators, Attribution Viewer).
+*   **[NEW] src/main/resources/css/style.css:** Custom CSS for modern dark-mode aesthetics (glassmorphism, vibrant neon accents).
+*   **[NEW] src/main/java/com/market4cast/DashboardController.java:** Handles UI data binding, table updates, and risk flagging for sector concentration.
+*   **[NEW] src/main/java/com/market4cast/SidecarManager.java:** Manages the spawning, monitoring, and graceful termination of the Python sidecar process.
+*   **[NEW] src/main/java/com/market4cast/db/DatabaseManager.java:** Java-side DAO to read prediction data and risk signals from the shared SQLite database.
+
+### Phase 3: Qualitative Intelligence & Risk Engine
+**Goal:** Implement the LLM analysis layer and the mathematical risk management system.
+*   **[NEW] src/engine/analysis.py:** Logic for fetching SEC filings (8-K/10-Q) and using LLM prompts to extract guidance evidence and scores.
+*   **[NEW] src/engine/llm_utils.py:** Utility wrapper for LLM API interaction, handling rate limits, retries, and evidence snippet extraction.
+*   **[NEW] src/engine/risk_engine.py:** Implements the calculation of Stop Losses, Suggested Position Sizes, and Sector Exposure caps.
+
+### Phase 4: Advanced Modeling & Packaging
+**Goal:** Implement the machine learning transition and package for distribution.
+*   **[NEW] src/engine/model_trainer.py:** Handles the Saturday 2 AM XGBoost retraining loop once the 500-sample data threshold is achieved.
+*   **[NEW] src/engine/model_predictor.py:** Implements the hybrid logic that transitions from Heuristic V1 to XGBoost V2.
+*   **[NEW] build.gradle:** Gradle configuration for **jpackage** to bundle the JVM, Python environment, and sidecar scripts into a single Windows `.exe`.
+
+## Verification Plan
+
+### Automated Tests
+*   **Backtest Accuracy:** Ensure the backtester reproduces known historical drift for a set of "control" tickers (e.g., NVDA, TSLA beats).
+*   **Rate Limiter Test:** Verify SEC EDGAR calls never exceed 10/sec.
+*   **Concurrency Test:** Stress test simultaneous DB writes/reads.
+
+### Manual Verification
+*   Verify the **Risk Dashboard** correctly flags when too many picks are in the same sector.
+*   Review **LLM Attribution** snippets for accuracy against actual 10-Q PDFs.

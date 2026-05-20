@@ -1,0 +1,87 @@
+.main-container {
+    -fx-background-color: #0b0e14;
+}
+
+.title-text {
+    -fx-fill: #ffffff;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.subtitle-text {
+    -fx-fill: #94a3b8;
+    -fx-font-size: 14px;
+}
+
+.section-header {
+    -fx-fill: #e2e8f0;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.stat-card {
+    -fx-background-color: rgba(30, 41, 59, 0.7);
+    -fx-background-radius: 10;
+    -fx-padding: 10 20;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 10;
+}
+
+.stat-label {
+    -fx-fill: #94a3b8;
+    -fx-font-size: 12px;
+}
+
+.stat-value {
+    -fx-fill: #22d3ee;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 5;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: #1e293b;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-background-color: #0f172a;
+    -fx-text-fill: white;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #1e293b;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #334155;
+}
+
+.card {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 10;
+}
+
+.evidence-box {
+    -fx-control-inner-background: #0f172a;
+    -fx-text-fill: #cbd5e1;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12px;
+}
+
+.label {
+    -fx-text-fill: #94a3b8;
+}

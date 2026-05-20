@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.market4cast.DashboardController"
+      stylesheets="@../css/style.css"
+      spacing="20"
+      styleClass="main-container">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <VBox>
+            <Text text="Market4cast" styleClass="title-text"/>
+            <Text text="Earnings Anomaly Dashboard" styleClass="subtitle-text"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS" />
+        <VBox alignment="CENTER" styleClass="stat-card">
+            <Text text="System Confidence" styleClass="stat-label"/>
+            <Text fx:id="confidenceScoreText" text="85%" styleClass="stat-value"/>
+        </VBox>
+    </HBox>
+
+    <!-- Main Content: Active Picks Table -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <Text text="Top 10 Active Predictions" styleClass="section-header"/>
+        <TableView fx:id="predictionsTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="tickerCol" text="Ticker" prefWidth="80"/>
+                <TableColumn fx:id="dateCol" text="Announced" prefWidth="120"/>
+                <TableColumn fx:id="entryCol" text="Entry Price" prefWidth="100"/>
+                <TableColumn fx:id="targetCol" text="Target Price" prefWidth="100"/>
+                <TableColumn fx:id="pctCol" text="Target %" prefWidth="80"/>
+                <TableColumn fx:id="sectorCol" text="Sector" prefWidth="120"/>
+                <TableColumn fx:id="catalystCol" text="Catalyst Summary" prefWidth="300"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Bottom Section: Risk Info & Attribution -->
+    <HBox spacing="20" prefHeight="150">
+        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="card">
+            <Text text="Risk Management" styleClass="section-header"/>
+            <Label fx:id="riskLabel" text="Sector exposure within limits." wrapText="true"/>
+        </VBox>
+        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="card">
+            <Text text="LLM Evidence Attribution" styleClass="section-header"/>
+            <TextArea fx:id="evidenceArea" editable="false" wrapText="true" styleClass="evidence-box"/>
+        </VBox>
+    </HBox>
+
+</VBox>

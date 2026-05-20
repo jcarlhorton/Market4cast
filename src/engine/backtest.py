@@ -9,7 +9,7 @@ W_GAP = 0.3
 W_VOL = 0.2
 BASE_DRIFT = 5.0  # Base expected percentage increase
 
-def run_backtest(tickers, start_year=2023, end_year=2024):
+def run_backtest(tickers, start_year=2023, end_year=2026):
     results = []
     
     for ticker in tickers:

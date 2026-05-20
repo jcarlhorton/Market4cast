@@ -3,14 +3,14 @@ import numpy as np
 
 def calculate_price_gap(df):
     """
-    Calculates the gap percentage between the current Close and previous Close.
-    Assumes df has a 'Close' column.
+    Calculates the gap percentage between the current Open and previous Close.
+    Assumes df has 'Open' and 'Close' columns.
     """
     if len(df) < 2:
         return 0.0
     
     prev_close = df['Close'].shift(1)
-    gap_pct = ((df['Close'] - prev_close) / prev_close) * 100
+    gap_pct = ((df['Open'] - prev_close) / prev_close) * 100
     return gap_pct
 
 def calculate_volume_spike(df, window=30):
